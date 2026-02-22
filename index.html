@@ -179,22 +179,29 @@
             background: rgba(220, 38, 38, 0.4);
         }
 
-        /* Tombol Exit Fullscreen Utama */
+        /* Tombol Exit Fullscreen Jadi Titik Merah Kecil di Pojok Kanan Atas */
         #realExitBtn {
             display: none;
             position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 10000;
-            background: rgba(220, 38, 38, 0.8);
-            color: white;
-            border: 2px solid white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 14px;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+            /* Di belakang pad */
+            width: 25px;
+            height: 25px;
+            background: rgba(239, 68, 68, 0.5);
+            /* Merah transparan */
+            border: none;
+            border-radius: 50%;
             cursor: pointer;
-            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        #realExitBtn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.2);
+            z-index: 1000;
+            /* Muncul ke depan saat disentuh */
         }
 
         #realExitBtn:hover {
@@ -849,7 +856,7 @@
         function showExitBtn() {
             const btn = document.getElementById('realExitBtn');
             btn.style.display = 'block';
-            btn.innerHTML = "KELUAR FULLSCREEN";
+            btn.innerHTML = "";
 
             // Tutup jika klik di luar tombol (opsional, tapi bagus untuk UX)
             btn.onclick = function (e) {
