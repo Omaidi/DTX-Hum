@@ -1,12 +1,10 @@
 // sw.js - Service Worker untuk Akses Offline
-const CACHE_NAME = 'dtx-cache-v3';
+const CACHE_NAME = 'dtx-cache-v4';
 
 // File utama yang harus ada di awal
 const INITIAL_CACHING = [
     './',
-    './index.html',
-    './manifest.json',
-    './dtx_hum_logo.png'
+    './index.html'
 ];
 
 // Saat Service Worker dipasang
