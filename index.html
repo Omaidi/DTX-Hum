@@ -828,19 +828,34 @@
 
         function play(url, id, fromLoop = false) {
             if (!url) return;
+
+            // Resume context jika tersuspensi (penting untuk mobile)
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            // Catat waktu tekan SEKARANG agar rekaman presisi
+            const now = audioCtx.currentTime;
+
             getBuffer(url).then(buf => {
                 if (!buf) return;
-                if (audioCtx.state === 'suspended') audioCtx.resume();
                 const src = audioCtx.createBufferSource();
                 src.buffer = buf;
                 src.connect(audioCtx.destination);
                 src.start(0);
+
                 const el = document.querySelector(`.pad[data-id="${id}"]`);
                 if (el) {
                     el.classList.add('active');
                     setTimeout(() => el.classList.remove('active'), 70);
                 }
-                if (isRec && !fromLoop) events.push({ url, id, time: audioCtx.currentTime - startT });
+
+                // Simpan ke rekaman jika sedang aktif
+                if (isRec && !fromLoop) {
+                    events.push({
+                        url: url,
+                        id: id,
+                        time: now - startT
+                    });
+                }
             });
         }
 
@@ -1015,21 +1030,41 @@
         }
 
         function toggleRecord() {
+            // Paksa resume saat mulai rekam
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
             if (!isRec) {
-                isRec = true; events = []; startT = audioCtx.currentTime;
+                // MULAI REKAM
+                isRec = true;
+                events = [];
+                startT = audioCtx.currentTime;
                 document.getElementById('btnRec').innerHTML = "⏹️ STOP REKAM";
                 document.getElementById('recInd').style.display = 'block';
+                showToast('Mulai merekam...');
             }
             else {
-                isRec = false; loopDur = audioCtx.currentTime - startT;
+                // BERHENTI REKAM
+                isRec = false;
+                loopDur = audioCtx.currentTime - startT;
+
+                // Jika durasi terlalu pendek atau tidak ada event, abaikan
+                if (events.length === 0 || loopDur < 0.1) {
+                    events = [];
+                    document.getElementById('btnRec').innerHTML = "⏺ MULAI REKAM";
+                    document.getElementById('recInd').style.display = 'none';
+                    showToast('Rekaman kosong / terlalu pendek');
+                    return;
+                }
+
                 document.getElementById('btnRec').innerHTML = "🔄 REKAM BARU";
                 document.getElementById('recInd').style.display = 'none';
-                if (events.length > 0) {
-                    document.getElementById('btnPlay').style.display = 'block';
-                    document.getElementById('btnDel').style.display = 'block';
-                    startLoop();
-                    showToast('Rekaman disimpan! Tekan LOOP untuk memutar.');
-                }
+
+                document.getElementById('btnPlay').style.display = 'block';
+                document.getElementById('btnDel').style.display = 'block';
+
+                // Putar otomatis setelah rekam
+                startLoop();
+                showToast('Rekaman disimpan & diputar!');
             }
             toggleSidebar();
         }
