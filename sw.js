@@ -1,5 +1,5 @@
 // sw.js - Service Worker untuk Akses Offline
-const CACHE_NAME = 'dtx-cache-v5';
+const CACHE_NAME = 'dtx-cache-v6';
 
 // File utama yang harus ada di awal
 const INITIAL_CACHING = [

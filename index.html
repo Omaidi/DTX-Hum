@@ -708,6 +708,9 @@
         <button class="btn-sidebar" id="btnInstall"
             style="background: linear-gradient(145deg, #22c55e, #16a34a); display:none;" onclick="installPWA()">📥
             INSTAL APLIKASI (APK)</button>
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #8b5cf6, #6d28d9);"
+            onclick="shareApp()">📤
+            BAGIKAN LINK DOWNLOAD</button>
         <button class="btn-sidebar" onclick="toggleSidebar()"
             style="background: none; margin-top: 15px; color: #64748b; border: 1px solid #334155;">✕ TUTUP</button>
     </div>
@@ -1283,6 +1286,29 @@
         window.addEventListener('load', hideSplash);
     </script>
     <script>
+        // Fitur Berbagi Link Download
+        function shareApp() {
+            const siteUrl = window.location.href;
+            const shareText = "Download Aplikasi Drum Pad DTX-HUM Ibn Muhammad. Instal langsung tanpa iklan, ringan, dan suport offline!\n\nLink Download: " + siteUrl;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'DTX-HUM Drum Pad',
+                    text: shareText,
+                    url: siteUrl,
+                }).catch((error) => console.log('Gagal berbagi', error));
+            } else {
+                // Fallback: Copy to clipboard
+                const dummy = document.createElement('input');
+                document.body.appendChild(dummy);
+                dummy.value = siteUrl;
+                dummy.select();
+                document.execCommand('copy');
+                document.body.removeChild(dummy);
+                showToast('Link download berhasil disalin!');
+            }
+        }
+
         // Logika Instalasi PWA (Pengganti APK)
         let deferredPrompt;
         window.addEventListener('beforeinstallprompt', (e) => {
