@@ -544,7 +544,7 @@
             width: 0%;
             background: linear-gradient(90deg, #22c55e, #4ade80);
             box-shadow: 0 0 10px #22c55e;
-            animation: loadProgress 1.5s forwards ease-in-out;
+            animation: loadProgress 2.5s forwards ease-in-out;
         }
 
         @keyframes pulse {
@@ -1203,8 +1203,8 @@
         // Jalankan preload
         preloadAudio();
 
-        // Hilangkan splash screen setelah 1.5 detik (atau klik layar)
-        setTimeout(hideSplash, 1500);
+        // Hilangkan splash screen setelah 2.5 detik (atau klik layar)
+        setTimeout(hideSplash, 2500);
 
         // Backup: Klik di mana saja untuk menghilangkan splash jika macet
         document.getElementById('splashScreen').addEventListener('click', hideSplash);
