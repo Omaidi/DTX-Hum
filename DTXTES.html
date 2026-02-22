@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>DTX By Ibn Muhammad</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#22c55e">
+    <style>
+        /* Dasar & Reset */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(145deg, #0f172a 0%, #020617 100%);
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            height: 100dvh;
+            width: 100dvw;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* Header */
+        .header-info {
+            text-align: center;
+            z-index: 5;
+            position: relative;
+        }
+
+        .header-info h1 {
+            margin: 0;
+            font-size: clamp(16px, 4vw, 24px);
+            color: #22c55e;
+            letter-spacing: 2px;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+
+        .header-info p {
+            margin: 8px 0 0;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 6px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        /* FULLSCREEN */
+        body.is-fullscreen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 100dvh;
+            height: 100dvw;
+            transform: translate(-50%, -50%) rotate(90deg);
+            background: linear-gradient(145deg, #0f172a 0%, #020617 100%);
+        }
+
+        body.is-fullscreen .header-info {
+            display: none;
+        }
+
+        /* Container */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: 0.6fr 1.2fr 1.2fr 0.6fr;
+            gap: 12px;
+            width: 94%;
+            height: 72%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        body.is-fullscreen .container {
+            width: 97%;
+            height: 95%;
+            max-width: none;
+            gap: 8px;
+        }
+
+        /* Pad */
+        .pad {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 6px solid #020617;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .pad:hover {
+            transform: translateY(-2px);
+        }
+
+        .pad-editor:focus {
+            transform: translateY(-2px);
+        }
+
+        .pad:active,
+        .pad.active {
+            background: linear-gradient(145deg, #22c55e, #16a34a) !important;
+            border-bottom: none !important;
+            transform: translateY(4px);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        body.koplo-active .pad:active,
+        body.koplo-active .pad.active {
+            background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        /* Edit Mode Styles */
+        body.edit-mode-active .pad {
+            cursor: pointer;
+        }
+
+        body.edit-mode-active .pad::after {
+            content: '✎';
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        body.edit-mode-active .pad:hover::after {
+            opacity: 0.7;
+        }
+
+        body.edit-mode-active .pad.selected-for-edit {
+            border: 3px solid #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Label Teks */
+        .pad .label {
+            font-weight: 700;
+            font-size: clamp(8px, 2vw, 14px);
+            color: #cbd5e1;
+            pointer-events: none;
+            text-align: center;
+            transition: opacity 0.2s;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        body.hide-labels .pad .label {
+            opacity: 0;
+        }
+
+        /* EXIT SYSTEM - Diperbarui */
+        #exitTrigger {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: #dc2626;
+            clip-path: polygon(100% 0, 0 0, 100% 100%);
+            opacity: 0;
+            z-index: 5;
+            /* Di belakang pad jika pad memiliki z-index > 5 */
+            display: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.is-fullscreen #exitTrigger {
+            display: block;
+            opacity: 0.6;
+        }
+
+        #exitTrigger:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        #realExitBtn {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: linear-gradient(145deg, #ef4444, #dc2626);
+            color: white;
+            border: 4px solid white;
+            padding: 25px 60px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #realExitBtn:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 0 70px rgba(0, 0, 0, 0.9), 0 15px 40px rgba(239, 68, 68, 0.6);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+            display: flex;
+            flex-direction: column;
+            padding: 50px 25px 25px;
+            gap: 12px;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            border-left: 3px solid #16a34a;
+            box-shadow: -10px 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .btn-sidebar {
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(145deg, #334155, #1e293b);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-sidebar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-sidebar:active {
+            transform: translateY(0);
+        }
+
+        /* Modal Editor - Diperbaiki */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            padding: 25px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            max-height: 75vh;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal h3 {
+            margin: 0 0 15px;
+            text-align: center;
+            color: #f59e0b;
+            font-size: 20px;
+            letter-spacing: 1px;
+        }
+
+        .modal-info {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .sound-list {
+            flex: 1;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .sound-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sound-list::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+
+        .sound-list::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+
+        .sound-item {
+            background: linear-gradient(145deg, #0f172a, #020617);
+            margin-bottom: 8px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #94a3b8;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .sound-item:hover {
+            background: #1e293b;
+            border-color: #475569;
+        }
+
+        .sound-item.selected {
+            border-color: #22c55e;
+            background: linear-gradient(145deg, #064e3b, #022c22);
+            color: #4ade80;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .sound-item.playing {
+            animation: pulse 0.3s ease;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.cancel {
+            background: linear-gradient(145deg, #475569, #334155);
+            color: white;
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(145deg, #22c55e, #16a34a);
+            color: white;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Menu Button */
+        .menu-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #22c55e, #16a34a);
+            border: none;
+            font-size: 26px;
+            z-index: 90;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 15px 40px rgba(34, 197, 94, 0.5);
+        }
+
+        body.is-fullscreen .menu-btn {
+            display: none;
+        }
+
+        /* Recording Indicator */
+        #recInd {
+            color: #ef4444;
+            font-size: 16px;
+            display: none;
+            font-weight: bold;
+            position: absolute;
+            top: 20px;
+            animation: blink 0.8s infinite;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 20px;
+            border-radius: 20px;
+            border: 2px solid #ef4444;
+            letter-spacing: 2px;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+                text-shadow: 0 0 20px #ef4444;
+            }
+
+            50% {
+                opacity: 0.4;
+                text-shadow: none;
+            }
+        }
+
+        /* Edit Mode Indicator */
+        #editIndicator {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #f59e0b, #d97706);
+            color: #000;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 1000;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+            animation: slideDown 0.3s ease;
+        }
+
+        /* Splash Screen */
+        #splashScreen {
+            position: fixed;
+            inset: 0;
+            background: #020617;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 1s ease, visibility 1s;
+        }
+
+        #splashScreen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-logo {
+            width: 180px;
+            height: 180px;
+            background: url('dtx_hum_logo.png') no-repeat center;
+            background-size: contain;
+            filter: drop-shadow(0 0 30px rgba(34, 197, 94, 0.5));
+            animation: pulse 2s infinite ease-in-out;
+            margin-bottom: 20px;
+        }
+
+        .splash-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 5px;
+            text-shadow: 0 0 20px rgba(34, 197, 94, 0.8);
+            margin: 0;
+        }
+
+        .splash-loader {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .splash-progress {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #22c55e, #4ade80);
+            box-shadow: 0 0 10px #22c55e;
+            animation: loadProgress 3s forwards ease-in-out;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes loadProgress {
+            0% {
+                width: 0%;
+            }
+
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Splash Screen -->
+    <div id="splashScreen">
+        <div class="splash-logo"></div>
+        <h1 class="splash-title">DTX-HUM</h1>
+        <div class="splash-loader">
+            <div class="splash-progress"></div>
+        </div>
+    </div>
+    <div id="editIndicator">✎ EDIT MODE - PILIH PAD</div>
+
+    <div class="header-info">
+        <h1>DTX By Ibn Muhammad</h1>
+        <p id="displaySet">Set : Hadroh</p>
+    </div>
+
+    <div id="exitTrigger" onclick="showExitBtn()"></div>
+    <button id="realExitBtn" onclick="confirmExit()">KELUAR FULLSCREEN</button>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal">
+            <h3>🎵 GANTI SUARA PAD</h3>
+            <p class="modal-info" id="modalInfo">Pilih suara baru untuk pad ini</p>
+            <div class="sound-tabs">
+                <button class="tab-btn active" id="tabHadroh" onclick="switchEditLib('hadroh')">Hadroh</button>
+                <button class="tab-btn" id="tabSimpatik" onclick="switchEditLib('simpatik')">Simpatik</button>
+            </div>
+            <div id="soundPicker" class="sound-list"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal()">BATAL</button>
+                <button class="modal-btn save" onclick="saveAudio()">SIMPAN</button>
+            </div>
+        </div>
+    </div>
+
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+    <div id="sidebar" class="sidebar">
+        <div style="text-align: center; margin-bottom: 10px;">
+            <h2 style="margin: 0; color: #22c55e; font-size: 18px;">⚙️ PENGATURAN</h2>
+        </div>
+        <button class="btn-sidebar" id="btnMode" onclick="toggleMode()">📻 MODE: HADROH</button>
+        <button class="btn-sidebar" id="btnLabel" onclick="toggleLabels()">📝 TEKS PAD: ON</button>
+        <hr style="width:100%; border:0; border-top:1px solid #334155; margin: 10px 0;">
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #dc2626, #b91c1c);" id="btnRec"
+            onclick="toggleRecord()">⏺ MULAI REKAM</button>
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #2563eb, #1d4ed8); display:none;"
+            id="btnPlay" onclick="toggleLoop()">▶️ PUTAR LOOP</button>
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #475569, #334155); display:none;"
+            id="btnDel" onclick="deleteRec()">🗑️ HAPUS REKAMAN</button>
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #f59e0b, #d97706); color: black;"
+            onclick="activateEditMode()">✎ EDIT PAD</button>
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #6366f1, #4f46e5);"
+            onclick="toggleFullScreen(true)">🖥️ FULLSCREEN</button>
+        <button class="btn-sidebar" onclick="toggleSidebar()"
+            style="background: none; margin-top: 15px; color: #64748b; border: 1px solid #334155;">✕ TUTUP</button>
+    </div>
+
+    <div class="container" id="padContainer">
+        <!-- Baris 1: Atas -->
+        <div class="pad small" data-id="p14" data-h="Hadroh/GL DUK.wav" data-k="/Simpatik/simpatik14.webm">
+            <div class="label" id="l-p14">GL DUK</div>
+        </div>
+        <div class="pad small" data-id="p11" data-h="Hadroh/GL TEK.wav" data-k="/Simpatik/simpatik11.webm">
+            <div class="label" id="l-p11">GL TEK</div>
+        </div>
+        <div class="pad small" data-id="p16" data-h="Dtx/crashl.mp3" data-k="/Simpatik/simpatik16.webm">
+            <div class="label" id="l-p16">CRASH L</div>
+        </div>
+
+        <!-- Baris 2: Tengah Atas -->
+        <div class="pad" data-id="p1" data-h="Hadroh/WEDOK DUK.wav" data-k="/Simpatik/simpatik1.webm">
+            <div class="label" id="l-p1">WEDOK DUK</div>
+        </div>
+        <div class="pad" data-id="p2" data-h="Dtx/kick.mp3" data-k="/Simpatik/simpatik2.webm">
+            <div class="label" id="l-p2">KICK</div>
+        </div>
+        <div class="pad" data-id="p3" data-h="Hadroh/LANANG DUK.wav" data-k="/Simpatik/simpatik3.webm">
+            <div class="label" id="l-p3">LANANG DUK</div>
+        </div>
+
+        <!-- Baris 3: Tengah Bawah -->
+        <div class="pad" data-id="p5" data-h="Hadroh/WEDOK TEK.wav" data-k="/Simpatik/simpatik5.webm">
+            <div class="label" id="l-p5">WEDOK TEK</div>
+        </div>
+        <div class="pad" data-id="p7" data-h="Dtx/tom3.mp3" data-k="/Simpatik/simpatik7.webm">
+            <div class="label" id="l-p7">TOM3</div>
+        </div>
+        <div class="pad" data-id="p4" data-h="Hadroh/LANANG TEK.wav" data-k="/Simpatik/simpatik4.webm">
+            <div class="label" id="l-p4">LANANG TEK</div>
+        </div>
+
+        <!-- Baris 4: Bawah -->
+        <div class="pad small" data-id="p15" data-h="Hadroh/BASS DUK.wav" data-k="/Simpatik/simpatik15.webm">
+            <div class="label" id="l-p15">BASS DUK</div>
+        </div>
+        <div class="pad small" data-id="p9" data-h="Dtx/snare.mp3" data-k="/Simpatik/simpatik9.webm">
+            <div class="label" id="l-p9">SNARE</div>
+        </div>
+        <div class="pad small" data-id="p10" data-h="Dtx/ride.mp3" data-k="/Simpatik/simpatik10.webm">
+            <div class="label" id="l-p10">RIDE</div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Berhasil disimpan!</div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let currentMode = 'hadroh', isEditMode = false, activePad = null, labelsOn = true;
+        let isRec = false, isLoop = false, startT = 0, events = [], loopTo = null, loopDur = 0;
+        let exitTimer = null; // Variabel untuk timer exit
+        const buffers = {};
+
+        // ==========================================
+        // LIBRARY AUDIO LENGKAP
+        // ==========================================
+
+        // 1. SET HADROH - Semua file dari folder Hadroh
+        const libHadroh = [
+            // Bass sounds
+            "Hadroh/BASS DER.wav",
+            "Hadroh/BASS DUK.wav",
+            "Hadroh/BASS DUNG.wav",
+            "Hadroh/BassDtx.mp3",
+
+            // GL (Gendang Lambung) sounds
+            "Hadroh/GL DUK.wav",
+            "Hadroh/GL TEK.wav",
+
+            // GW (Gendang Wortel) sounds
+            "Hadroh/GW DUK.wav",
+            "Hadroh/GW TEK.wav",
+
+            // Lanang (Male) sounds
+            "Hadroh/LANANG DEP.wav",
+            "Hadroh/LANANG DUK.wav",
+            "Hadroh/LANANG TEK.wav",
+
+            // Wedok (Female) sounds
+            "Hadroh/WEDOK DEP.wav",
+            "Hadroh/WEDOK DUK.wav",
+            "Hadroh/WEDOK TEK.wav",
+
+            // Special sounds
+            "Hadroh/Spin.mp3",
+
+            // Additional sounds (tambahkan sesuai isi folder Anda)
+            "Hadroh/BASS TEK.wav",
+            "Hadroh/GL DEP.wav",
+            "Hadroh/GW DEP.wav",
+            "Hadroh/KECrek.wav",
+            "Hadroh/TAR.mp3"
+        ];
+
+        // 2. SET DTX - File drum kit
+        const libDtx = [
+            "Dtx/closehh.mp3",
+            "Dtx/crashl.mp3",
+            "Dtx/crashm.mp3",
+            "Dtx/crashr.mp3",
+            "Dtx/floor.mp3",
+            "Dtx/kick.mp3",
+            "Dtx/new-arista-pong.wav",
+            "Dtx/openhh.mp3",
+            "Dtx/ride.mp3",
+            "Dtx/snare.mp3",
+            "Dtx/tom1.mp3",
+            "Dtx/tom2.mp3",
+            "Dtx/tom3.mp3"
+        ];
+
+        // 3. SET SIMPATIK - Semua file dari folder Simpatik
+        const libSimpatik = [
+            "/Simpatik/simpatik1.webm",
+            "/Simpatik/simpatik2.webm",
+            "/Simpatik/simpatik3.webm",
+            "/Simpatik/simpatik4.webm",
+            "/Simpatik/simpatik5.webm",
+            "/Simpatik/simpatik6.webm",
+            "/Simpatik/simpatik7.webm",
+            "/Simpatik/simpatik8.webm",
+            "/Simpatik/simpatik9.webm",
+            "/Simpatik/simpatik10.webm",
+            "/Simpatik/simpatik11.webm",
+            "/Simpatik/simpatik12.webm",
+            "/Simpatik/simpatik13.webm",
+            "/Simpatik/simpatik14.webm",
+            "/Simpatik/simpatik15.webm",
+            "/Simpatik/simpatik16.webm",
+            "/Simpatik/simpatik17.webm",
+            "/Simpatik/simpatik18.webm",
+            "/Simpatik/simpatik19.webm",
+            "/Simpatik/simpatik20.webm"
+        ];
+
+        // ==========================================
+
+        async function getBuffer(url) {
+            if (buffers[url]) return buffers[url];
+            try {
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                const ab = await res.arrayBuffer();
+                return buffers[url] = await audioCtx.decodeAudioData(ab);
+            } catch (e) { return null; }
+        }
+
+        function play(url, id, fromLoop = false) {
+            if (!url) return;
+            getBuffer(url).then(buf => {
+                if (!buf) return;
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const src = audioCtx.createBufferSource();
+                src.buffer = buf;
+                src.connect(audioCtx.destination);
+                src.start(0);
+                const el = document.querySelector(`.pad[data-id="${id}"]`);
+                if (el) {
+                    el.classList.add('active');
+                    setTimeout(() => el.classList.remove('active'), 70);
+                }
+                if (isRec && !fromLoop) events.push({ url, id, time: audioCtx.currentTime - startT });
+            });
+        }
+
+        function toggleLabels() {
+            labelsOn = !labelsOn;
+            document.body.classList.toggle('hide-labels');
+            document.getElementById('btnLabel').innerText = labelsOn ? "📝 TEKS PAD: ON" : "📝 TEKS PAD: OFF";
+            document.getElementById('btnLabel').style.background = labelsOn ? "linear-gradient(145deg, #64748b, #475569)" : "linear-gradient(145deg, #1e293b, #0f172a)";
+            toggleSidebar();
+            showToast(labelsOn ? 'Label ditampilkan' : 'Label disembunyikan');
+        }
+
+        function showExitBtn() {
+            const btn = document.getElementById('realExitBtn');
+            btn.style.display = 'block';
+            btn.innerHTML = "KELUAR FULLSCREEN";
+
+            // Tutup jika klik di luar tombol (opsional, tapi bagus untuk UX)
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                toggleFullScreen(false);
+            };
+        }
+
+        function confirmExit() {
+            // Fungsi ini dipanggil dari onclick button
+            // Timer akan dihapus dan fullscreen ditutup
+        }
+
+        function toggleFullScreen(g) {
+            const btn = document.getElementById('realExitBtn');
+            const trigger = document.getElementById('exitTrigger');
+
+            // Hapus timer dan sembunyikan tombol exit SEBELUM keluar fullscreen
+            if (exitTimer) {
+                clearInterval(exitTimer);
+                exitTimer = null;
+            }
+
+            // Sembunyikan tombol exit
+            btn.style.display = 'none';
+            trigger.style.display = 'none';
+
+            if (g) {
+                document.documentElement.requestFullscreen().catch(e => { });
+                document.body.classList.add('is-fullscreen');
+            }
+            else {
+                if (document.fullscreenElement) document.exitFullscreen();
+                document.body.classList.remove('is-fullscreen');
+
+                // Reset tampilan
+                btn.style.display = 'none';
+                btn.innerHTML = 'KELUAR FULLSCREEN'; // Reset teks ke default
+            }
+
+            if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function toggleMode() {
+            // Ganti mode antara Hadroh dan Koplo (DTX)
+            currentMode = (currentMode === 'hadroh' ? 'koplo' : 'hadroh');
+            document.body.classList.toggle('koplo-active');
+            // Update label set
+            document.getElementById('displaySet').innerText = "Set : " + (currentMode === 'hadroh' ? 'Hadroh' : 'DTX');
+            // Update tombol mode
+            document.getElementById('btnMode').innerText = currentMode === 'hadroh' ? "📻 MODE: HADROH" : "🥁 MODE: DTX";
+            document.getElementById('btnMode').style.background = currentMode === 'hadroh' ? "linear-gradient(145deg, #16a34a, #15803d)" : "linear-gradient(145deg, #dc2626, #b91c1c)";
+            // Jika mode Koplo, ganti semua data-h pada pad menjadi audio DTX
+            if (currentMode === 'koplo') {
+                document.querySelectorAll('.pad').forEach((p, idx) => {
+                    // gunakan urutan libDtx (asumsi panjangnya sama atau lebih dari pad)
+                    const dtxSound = libDtx[idx % libDtx.length];
+                    p.dataset.h = dtxSound; // ganti sumber Hadroh dengan DTX
+                });
+            }
+            // Perbarui label pad agar sesuai dengan nama file audio yang dipakai
+            updatePadLabels();
+            toggleSidebar();
+            showToast(currentMode === 'hadroh' ? 'Mode Hadroh aktif' : 'Mode DTX aktif');
+        }
+
+        // Fungsi untuk memperbarui teks label pada setiap pad
+        function updatePadLabels() {
+            document.querySelectorAll('.pad').forEach(p => {
+                const src = (currentMode === 'hadroh' ? p.dataset.h : p.dataset.k);
+                const name = src.split('/').pop().split('.')[0]; // tanpa ekstensi
+                const label = p.querySelector('.label');
+                if (label) label.textContent = name.toUpperCase();
+            });
+        }
+
+        function activateEditMode() {
+            isEditMode = true;
+            document.body.classList.add('edit-mode-active');
+            toggleSidebar();
+            showToast('Pilih pad yang ingin diedit');
+        }
+
+        function openEditor(pad) {
+            activePad = pad;
+            renderList();
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+
+        let editLib = 'hadroh'; // default library for editing
+        function switchEditLib(lib) {
+            editLib = lib;
+            // Update tab UI
+            document.getElementById('tabHadroh').classList.toggle('active', lib === 'hadroh');
+            document.getElementById('tabSimpatik').classList.toggle('active', lib === 'simpatik');
+            renderList();
+        }
+        function renderList() {
+            const div = document.getElementById('soundPicker');
+            div.innerHTML = "";
+            // Pilih library berdasarkan editLib
+            let currentLib = [];
+            let libName = "";
+            if (editLib === 'hadroh') {
+                currentLib = libHadroh;
+                libName = "FOLDER HADROH";
+            } else {
+                currentLib = libSimpatik;
+                libName = "FOLDER SIMPATIK";
+            }
+            document.getElementById('modalInfo').innerText = `Pilih suara dari ${libName}`;
+            const currentSound = (editLib === 'hadroh' ? activePad.dataset.h : activePad.dataset.k);
+            currentLib.forEach((f) => {
+                const item = document.createElement('div');
+                const fileName = f.split('/').pop().split('.')[0].toUpperCase();
+                const isSelected = currentSound === f;
+                item.className = 'sound-item' + (isSelected ? ' selected' : '');
+                item.innerText = fileName;
+                item.onclick = () => {
+                    play(f, activePad.dataset.id, true);
+                    if (editLib === 'hadroh') activePad.dataset.h = f;
+                    else activePad.dataset.k = f;
+                    renderList();
+                    item.classList.add('playing');
+                    setTimeout(() => item.classList.remove('playing'), 300);
+                };
+                div.appendChild(item);
+            });
+            if (currentLib.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'sound-item';
+                emptyMsg.style.textAlign = 'center';
+                emptyMsg.innerText = 'Tidak ada suara tersedia';
+                div.appendChild(emptyMsg);
+            }
+        }
+
+
+        function closeModal() {
+            document.getElementById('modalOverlay').style.display = 'none';
+            isEditMode = false;
+            document.body.classList.remove('edit-mode-active');
+        }
+
+        function toggleRecord() {
+            if (!isRec) {
+                isRec = true; events = []; startT = audioCtx.currentTime;
+                document.getElementById('btnRec').innerHTML = "⏹️ STOP REKAM";
+                document.getElementById('recInd').style.display = 'block';
+            }
+            else {
+                isRec = false; loopDur = audioCtx.currentTime - startT;
+                document.getElementById('btnRec').innerHTML = "🔄 REKAM BARU";
+                document.getElementById('recInd').style.display = 'none';
+                if (events.length > 0) {
+                    document.getElementById('btnPlay').style.display = 'block';
+                    document.getElementById('btnDel').style.display = 'block';
+                    startLoop();
+                    showToast('Rekaman disimpan! Tekan LOOP untuk memutar.');
+                }
+            }
+            toggleSidebar();
+        }
+
+        function startLoop() {
+            isLoop = true;
+            document.getElementById('btnPlay').innerHTML = "⏸️ MATIKAN LOOP";
+            playPattern();
+        }
+
+        function stopLoop() {
+            isLoop = false;
+            clearTimeout(loopTo);
+            document.getElementById('btnPlay').innerHTML = "▶️ PUTAR LOOP";
+        }
+
+        function toggleLoop() {
+            if (isLoop) stopLoop(); else startLoop();
+            toggleSidebar();
+        }
+
+        function playPattern() {
+            if (!isLoop) return;
+            events.forEach(ev => {
+                setTimeout(() => {
+                    if (isLoop) play(ev.url, ev.id, true);
+                }, ev.time * 1000);
+            });
+            loopTo = setTimeout(playPattern, loopDur * 1000);
+        }
+
+        function deleteRec() {
+            stopLoop();
+            events = [];
+            document.getElementById('btnPlay').style.display = 'none';
+            document.getElementById('btnDel').style.display = 'none';
+            toggleSidebar();
+            showToast('Rekaman dihapus');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // Event Listeners untuk Pad
+        document.querySelectorAll('.pad').forEach(p => {
+            p.addEventListener('pointerdown', e => {
+                e.preventDefault();
+                if (isEditMode) {
+                    openEditor(p);
+                } else {
+                    // Mainkan suara pad
+                    const soundUrl = (currentMode === 'hadroh' ? p.dataset.h : p.dataset.k);
+                    play(soundUrl, p.dataset.id);
+                    // Tidak ada textarea, jadi tidak ada sinkronisasi teks
+                }
+            });
+        });
+
+        // Keyboard support (12 Pads: 567, RTY, FGH, VBN)
+        document.addEventListener('keydown', (e) => {
+            const keyMap = {
+                '5': 'p14', '6': 'p11', '7': 'p16', // Baris 1: Atas
+                'r': 'p1', 't': 'p2', 'y': 'p3',  // Baris 2: Tengah Atas
+                'f': 'p5', 'g': 'p7', 'h': 'p4',  // Baris 3: Tengah Bawah
+                'v': 'p15', 'b': 'p9', 'n': 'p10'  // Baris 4: Bawah
+            };
+            const key = e.key.toLowerCase();
+            if (keyMap[key]) {
+                const padId = keyMap[key];
+                const pad = document.querySelector(`.pad[data-id="${padId}"]`);
+                if (pad) {
+                    const url = (currentMode === 'hadroh' ? pad.dataset.h : pad.dataset.k);
+                    play(url, padId);
+                }
+            }
+            // Fitur F (Fullscreen) dan Esc (Escape) dihapus sesuai permintaan agar tidak mengganggu
+            if (e.key === 'm') toggleSidebar();
+            if (e.key === 'l') if (events.length > 0) toggleLoop();
+        });
+
+        // Deteksi perubahan fullscreen dari browser
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                // Jika fullscreen ditutup dari browser (bukan dari tombol)
+                const btn = document.getElementById('realExitBtn');
+                const trigger = document.getElementById('exitTrigger');
+
+                // Hapus timer dan sembunyikan tombol
+                if (exitTimer) {
+                    clearInterval(exitTimer);
+                    exitTimer = null;
+                }
+
+                btn.style.display = 'none';
+                btn.innerHTML = 'KELUAR FULLSCREEN';
+                trigger.style.display = 'none';
+                document.body.classList.remove('is-fullscreen');
+            }
+        });
+
+        // Deteksi klik di luar sidebar untuk menutup
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.querySelector('.menu-btn');
+
+            if (sidebar.classList.contains('open') &&
+                !sidebar.contains(e.target) &&
+                !menuBtn.contains(e.target)) {
+                toggleSidebar();
+            }
+        });
+
+        // Panggil preload saat halaman dimuat
+        window.addEventListener('load', () => {
+            preloadAudio();
+
+            // Logika Splash Screen 3 detik
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                splash.classList.add('fade-out');
+                // Beri sedikit waktu untuk animasi fade agar halus
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 1000);
+            }, 3000);
+        });
+    </script>
+    <script>
+        // Daftarkan Service Worker untuk fitur Offline (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker terdaftar! Siap offline.'))
+                    .catch(err => console.log('Gagal mendaftarkan Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

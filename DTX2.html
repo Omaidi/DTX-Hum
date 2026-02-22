@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DTX By Ibn Muhammad</title>
+<style>
+    /* Dasar & Reset */
+    * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; }
+    html, body { 
+        margin: 0; padding: 0; background: #020617; color: white; 
+        font-family: sans-serif; height: 100dvh; width: 100dvw; 
+        overflow: hidden; touch-action: none;
+    }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+
+    /* Header */
+    .header-info { text-align: center; z-index: 5; }
+    .header-info h1 { margin: 0; font-size: 20px; color: #22c55e; letter-spacing: 1px; }
+    .header-info p { margin: 5px 0 0; font-size: 13px; color: #94a3b8; font-weight: bold; background: #1e293b; padding: 4px 15px; border-radius: 20px; display: inline-block; }
+
+    /* FULLSCREEN */
+    body.is-fullscreen { position: fixed; top: 50%; left: 50%; width: 100dvh; height: 100dvw; transform: translate(-50%, -50%) rotate(90deg); }
+    body.is-fullscreen .header-info { display: none; }
+
+    /* Container */
+    .container { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 0.6fr 1.2fr 1.2fr 0.6fr; gap: 10px; width: 92%; height: 75%; max-width: 480px; position: relative; }
+    body.is-fullscreen .container { width: 98%; height: 96%; max-width: none; gap: 6px; }
+
+    /* Pad */
+    .pad { background: #1e293b; border-radius: 12px; display: flex; align-items: center; justify-content: center; border-bottom: 6px solid #0f172a; position: relative; }
+    .pad.active { background: #22c55e !important; border-bottom: none; transform: translateY(4px); }
+    body.koplo-active .pad.active { background: #ef4444 !important; }
+
+    /* Label Teks */
+    .pad .label { font-weight: bold; font-size: 10px; color: #cbd5e1; pointer-events: none; text-align: center; transition: opacity 0.2s; }
+    body.hide-labels .pad .label { opacity: 0; }
+
+    /* EXIT SYSTEM */
+    #exitTrigger { position: fixed; top: 0; right: 0; width: 80px; height: 80px; background: #450a0a; border-bottom-left-radius: 100%; opacity: 0; z-index: 999; display: none; }
+    body.is-fullscreen #exitTrigger { display: block; opacity: 0.3; }
+    #realExitBtn { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: #ef4444; color: white; border: 2px solid white; padding: 20px 40px; border-radius: 15px; font-weight: bold; box-shadow: 0 0 50px rgba(0,0,0,0.9); }
+
+    /* Sidebar */
+    .sidebar { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: #0f172a; display: flex; flex-direction: column; padding: 40px 20px; gap: 10px; transition: 0.3s; z-index: 100; border-left: 5px solid #16a34a; }
+    .sidebar.open { right: 0; }
+    .btn-sidebar { padding: 14px; border-radius: 10px; border: none; background: #334155; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+
+    /* Modal Editor */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; backdrop-filter: blur(10px); }
+    .modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e293b; padding: 20px; border-radius: 20px; width: 85%; max-width: 350px; display: flex; flex-direction: column; max-height: 80vh; }
+    .sound-list { flex: 1; overflow-y: auto; margin: 15px 0; border: 1px solid #334155; border-radius: 10px; padding: 5px; }
+    .sound-item { background: #0f172a; margin-bottom: 8px; padding: 15px; border-radius: 10px; font-size: 13px; color: #94a3b8; border: 2px solid transparent; }
+    .sound-item.selected { border-color: #22c55e; background: #064e3b; color: white; }
+
+    .menu-btn { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: #22c55e; border: none; font-size: 24px; z-index: 90; box-shadow: 0 8px 20px rgba(0,0,0,0.5); }
+    body.is-fullscreen .menu-btn { display: none; }
+    #recInd { color: #ef4444; font-size: 14px; display: none; font-weight: bold; position: absolute; top: 15px; animation: blink 1s infinite; z-index: 10; }
+    @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+
+<div id="recInd">● RECORDING</div>
+<div class="header-info">
+    <h1>DTX By Ibn Muhammad</h1>
+    <p id="displaySet">Set : Hadroh</p>
+</div>
+
+<div id="exitTrigger" onclick="showExitBtn()"></div>
+<button id="realExitBtn" onclick="toggleFullScreen(false)">KELUAR FULLSCREEN</button>
+
+<div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+        <h3 style="margin:0; text-align:center; color:#f59e0b;">GANTI SUARA</h3>
+        <div id="soundPicker" class="sound-list"></div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-sidebar" style="background:#4b5563; flex:1;" onclick="closeModal()">BATAL</button>
+            <button class="btn-sidebar" style="background:#22c55e; flex:1;" onclick="saveAudio()">SIMPAN</button>
+        </div>
+    </div>
+</div>
+
+<button class="menu-btn" onclick="toggleSidebar()">☰</button>
+
+<div id="sidebar" class="sidebar">
+    <button class="btn-sidebar" id="btnMode" style="background:#16a34a;" onclick="toggleMode()">MODE: HADROH</button>
+    <button class="btn-sidebar" id="btnLabel" style="background:#64748b;" onclick="toggleLabels()">TEKS PAD: ON</button>
+    <hr style="width:100%; border:0; border-top:1px solid #1e293b; margin:5px 0;">
+    <button class="btn-sidebar" style="background:#dc2626" id="btnRec" onclick="toggleRecord()">MULAI REKAM</button>
+    <button class="btn-sidebar" style="background:#2563eb; display:none;" id="btnPlay" onclick="toggleLoop()">PUTAR LOOP</button>
+    <button class="btn-sidebar" style="background:#4b5563; display:none;" id="btnDel" onclick="deleteRec()">HAPUS REKAMAN</button>
+    <button class="btn-sidebar" style="background:#f59e0b; color:black;" onclick="activateEditMode()">EDIT PAD</button>
+    <button class="btn-sidebar" style="background:#6366f1;" onclick="toggleFullScreen(true)">FULLSCREEN</button>
+    <button class="btn-sidebar" onclick="toggleSidebar()" style="background:none; margin-top:10px; color:#64748b;">TUTUP</button>
+</div>
+
+<div class="container" id="padContainer">
+    <div class="pad small" data-id="p14" data-h="GL DUK.wav" data-k="/Simpatik/simpatik14.webm"><div class="label" id="l-p14">GL DUK</div></div>
+    <div class="pad small" data-id="p11" data-h="GL TEK.wav" data-k="/Simpatik/simpatik11.webm"><div class="label" id="l-p11">GL TEK</div></div>
+    <div class="pad small" data-id="p16" data-h="Dtx/crashl.mp3" data-k="/Simpatik/simpatik16.webm"><div class="label" id="l-p16">CRASH L</div></div>
+    
+    <div class="pad" data-id="p1" data-h="WEDOK DUK.wav" data-k="/Simpatik/simpatik1.webm"><div class="label" id="l-p1">WEDOK DUK</div></div>
+    <div class="pad" data-id="p2" data-h="Dtx/kick.mp3" data-k="/Simpatik/simpatik2.webm"><div class="label" id="l-p2">KICK</div></div>
+    <div class="pad" data-id="p3" data-h="LANANG DUK.wav" data-k="/Simpatik/simpatik3.webm"><div class="label" id="l-p3">LANANG DUK</div></div>
+    
+    <div class="pad" data-id="p5" data-h="WEDOK TEK.wav" data-k="/Simpatik/simpatik5.webm"><div class="label" id="l-p5">WEDOK TEK</div></div>
+    <div class="pad" data-id="p7" data-h="Dtx/tom3.mp3" data-k="/Simpatik/simpatik7.webm"><div class="label" id="l-p7">TOM3</div></div>
+    <div class="pad" data-id="p4" data-h="LANANG TEK.wav" data-k="/Simpatik/simpatik4.webm"><div class="label" id="l-p4">LANANG TEK</div></div>
+    
+    <div class="pad small" data-id="p15" data-h="BASS DUK.wav" data-k="/Simpatik/simpatik15.webm"><div class="label" id="l-p15">BASS DUK</div></div>
+    <div class="pad small" data-id="p9" data-h="Dtx/snare.mp3" data-k="/Simpatik/simpatik9.webm"><div class="label" id="l-p9">SNARE</div></div>
+    <div class="pad small" data-id="p10" data-h="Dtx/ride.mp3" data-k="/Simpatik/simpatik10.webm"><div class="label" id="l-p10">RIDE</div></div>
+</div>
+
+<script>
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let currentMode = 'hadroh', isEditMode = false, activePad = null, labelsOn = true;
+let isRec = false, isLoop = false, startT = 0, events = [], loopTo = null, loopDur = 0;
+const buffers = {};
+
+// ==========================================
+// LIBRARY AUDIO (FOKUS DISINI)
+// ==========================================
+
+// 1. SET HADROH / ROOT FILES
+const libHadroh = [
+    "BASS DER.wav", "BASS DUK.wav", "BASS DUNG.wav", "BassDtx.mp3",
+    "GL DUK.wav", "GL TEK.wav", "GW DUK.wav", "GW TEK.wav",
+    "LANANG DEP.wav", "LANANG DUK.wav", "LANANG TEK.wav",
+    "WEDOK DEP.wav", "WEDOK DUK.wav", "WEDOK TEK.wav", "Spin.mp3",
+    // --- TAMBAH NAMA FILE BARU DI ATAS INI ---
+];
+
+// 2. SET DTX / FOLDER Dtx
+const libDtx = [
+    "Dtx/closehh.mp3", "Dtx/crashl.mp3", "Dtx/crashm.mp3", "Dtx/crashr.mp3",
+    "Dtx/floor.mp3", "Dtx/kick.mp3", "Dtx/new-arista-pong.wav", "Dtx/openhh.mp3",
+    "Dtx/ride.mp3", "Dtx/snare.mp3", "Dtx/tom1.mp3", "Dtx/tom2.mp3", "Dtx/tom3.mp3",
+    // --- TAMBAH NAMA FILE FOLDER Dtx DISINI ---
+];
+
+// 3. SET SIMPATIK / FOLDER Simpatik
+const libSimpatik = [
+    "/Simpatik/simpatik1.webm", "/Simpatik/simpatik2.webm", "/Simpatik/simpatik3.webm",
+    "/Simpatik/simpatik4.webm", "/Simpatik/simpatik5.webm", "/Simpatik/simpatik7.webm",
+    "/Simpatik/simpatik9.webm", "/Simpatik/simpatik10.webm", "/Simpatik/simpatik11.webm",
+    "/Simpatik/simpatik12.webm", "/Simpatik/simpatik13.webm", "/Simpatik/simpatik14.webm",
+    "/Simpatik/simpatik15.webm", "/Simpatik/simpatik16.webm"
+    // --- TAMBAH NAMA FILE FOLDER Simpatik DISINI ---
+];
+
+// ==========================================
+
+async function getBuffer(url) {
+    if (buffers[url]) return buffers[url];
+    try {
+        const res = await fetch(url);
+        if(!res.ok) return null;
+        const ab = await res.arrayBuffer();
+        return buffers[url] = await audioCtx.decodeAudioData(ab);
+    } catch(e) { return null; }
+}
+
+function play(url, id, fromLoop = false) {
+    if(!url) return;
+    getBuffer(url).then(buf => {
+        if (!buf) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const src = audioCtx.createBufferSource();
+        src.buffer = buf;
+        src.connect(audioCtx.destination);
+        src.start(0);
+        const el = document.querySelector(`.pad[data-id="${id}"]`);
+        if(el) { el.classList.add('active'); setTimeout(() => el.classList.remove('active'), 70); }
+        if (isRec && !fromLoop) events.push({ url, id, time: audioCtx.currentTime - startT });
+    });
+}
+
+function toggleLabels() {
+    labelsOn = !labelsOn;
+    document.body.classList.toggle('hide-labels');
+    document.getElementById('btnLabel').innerText = "TEKS PAD: " + (labelsOn ? "ON" : "OFF");
+    document.getElementById('btnLabel').style.background = (labelsOn ? "#64748b" : "#1e293b");
+    toggleSidebar();
+}
+
+function showExitBtn() { document.getElementById('realExitBtn').style.display='block'; setTimeout(()=>document.getElementById('realExitBtn').style.display='none', 3000); }
+function toggleFullScreen(g) {
+    if(g) { document.documentElement.requestFullscreen().catch(e=>{}); document.body.classList.add('is-fullscreen'); }
+    else { if(document.fullscreenElement) document.exitFullscreen(); document.body.classList.remove('is-fullscreen'); }
+    if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+function toggleMode() {
+    currentMode = (currentMode === 'hadroh' ? 'koplo' : 'hadroh');
+    document.body.classList.toggle('koplo-active');
+    document.getElementById('displaySet').innerText = "Set : " + (currentMode === 'hadroh' ? 'Hadroh' : 'DTX');
+    document.getElementById('btnMode').innerText = "MODE: " + currentMode.toUpperCase();
+    document.getElementById('btnMode').style.background = (currentMode === 'hadroh' ? '#16a34a' : '#dc2626');
+    toggleSidebar();
+}
+
+function activateEditMode() { isEditMode = true; document.body.classList.add('edit-mode-active'); toggleSidebar(); }
+function openEditor(pad) { activePad = pad; renderList(); document.getElementById('modalOverlay').style.display = 'block'; }
+
+function renderList() {
+    const div = document.getElementById('soundPicker');
+    div.innerHTML = "";
+    // Gabungkan semua library agar bisa dipilih semua format
+    const allSounds = [...libHadroh, ...libDtx, ...libSimpatik];
+    
+    allSounds.forEach(f => {
+        const item = document.createElement('div');
+        const currentSound = (currentMode === 'hadroh' ? activePad.dataset.h : activePad.dataset.k);
+        const isSelected = currentSound === f;
+        item.className = 'sound-item' + (isSelected ? ' selected' : '');
+        item.innerText = f.split('/').pop().toUpperCase();
+        item.onclick = () => { 
+            play(f, activePad.dataset.id, true); 
+            if(currentMode === 'hadroh') activePad.dataset.h = f; 
+            else activePad.dataset.k = f; 
+            renderList(); 
+        };
+        div.appendChild(item);
+    });
+}
+
+function saveAudio() {
+    const url = (currentMode === 'hadroh' ? activePad.dataset.h : activePad.dataset.k);
+    const label = document.getElementById('l-'+activePad.dataset.id);
+    if(label) label.innerText = url.split('/').pop().split('.')[0].toUpperCase();
+    closeModal();
+}
+function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; isEditMode = false; document.body.classList.remove('edit-mode-active'); }
+
+function toggleRecord() {
+    if (!isRec) { isRec = true; events = []; startT = audioCtx.currentTime; document.getElementById('btnRec').innerText = "STOP REKAM"; document.getElementById('recInd').style.display = 'block'; }
+    else { isRec = false; loopDur = audioCtx.currentTime - startT; document.getElementById('btnRec').innerText = "REKAM BARU"; document.getElementById('recInd').style.display = 'none';
+        if (events.length > 0) { document.getElementById('btnPlay').style.display = 'block'; document.getElementById('btnDel').style.display = 'block'; startLoop(); }
+    }
+    toggleSidebar();
+}
+function startLoop() { isLoop = true; document.getElementById('btnPlay').innerText = "MATIKAN LOOP"; playPattern(); }
+function stopLoop() { isLoop = false; clearTimeout(loopTo); document.getElementById('btnPlay').innerText = "PUTAR LOOP"; }
+function toggleLoop() { if (isLoop) stopLoop(); else startLoop(); toggleSidebar(); }
+function playPattern() { if (!isLoop) return; events.forEach(ev => { setTimeout(() => { if (isLoop) play(ev.url, ev.id, true); }, ev.time * 1000); }); loopTo = setTimeout(playPattern, loopDur * 1000); }
+function deleteRec() { stopLoop(); events = []; document.getElementById('btnPlay').style.display = 'none'; document.getElementById('btnDel').style.display = 'none'; toggleSidebar(); }
+
+document.querySelectorAll('.pad').forEach(p => {
+    p.addEventListener('pointerdown', e => { e.preventDefault(); if (isEditMode) openEditor(p); else play((currentMode === 'hadroh' ? p.dataset.h : p.dataset.k), p.dataset.id); });
+});
+</script>
+</body>
+</html>
