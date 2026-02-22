@@ -659,6 +659,9 @@
             onclick="activateEditMode()">✎ EDIT PAD</button>
         <button class="btn-sidebar" style="background: linear-gradient(145deg, #6366f1, #4f46e5);"
             onclick="toggleFullScreen(true)">🖥️ FULLSCREEN</button>
+        <button class="btn-sidebar" id="btnInstall"
+            style="background: linear-gradient(145deg, #22c55e, #16a34a); display:none;" onclick="installPWA()">📥
+            INSTAL APLIKASI (APK)</button>
         <button class="btn-sidebar" onclick="toggleSidebar()"
             style="background: none; margin-top: 15px; color: #64748b; border: 1px solid #334155;">✕ TUTUP</button>
     </div>
@@ -1209,6 +1212,29 @@
         window.addEventListener('load', hideSplash);
     </script>
     <script>
+        // Logika Instalasi PWA (Pengganti APK)
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Simpan event agar bisa dipicu nanti
+            e.preventDefault();
+            deferredPrompt = e;
+            // Munculkan tombol instal di sidebar
+            const btnInstall = document.getElementById('btnInstall');
+            if (btnInstall) btnInstall.style.display = 'block';
+        });
+
+        async function installPWA() {
+            if (!deferredPrompt) return;
+            // Munculkan prompt instalasi
+            deferredPrompt.prompt();
+            // Tunggu jawaban user
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to install: ${outcome}`);
+            // Reset prompt
+            deferredPrompt = null;
+            document.getElementById('btnInstall').style.display = 'none';
+        }
+
         // Daftarkan Service Worker untuk fitur Offline (PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
