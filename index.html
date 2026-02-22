@@ -824,12 +824,23 @@
         function play(url, id, fromLoop = false) {
             if (!url) return;
 
-            // Resume context jika tersuspensi (penting untuk mobile)
+            // Resume context jika tersuspensi (Mobile support)
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
-            // Catat waktu tekan SEKARANG agar rekaman presisi
-            const now = audioCtx.currentTime;
+            // Catat waktu hit segera (menggunakan Date.now agar konsisten)
+            const now = Date.now();
 
+            // SINKRONISASI REKAMAN: Simpan hit SEGERA saat ditekan, bukan saat suara bunyi
+            if (isRec && !fromLoop) {
+                events.push({
+                    url: url,
+                    id: id,
+                    time: now - startT
+                });
+                console.log("Recorded hit:", url, "at", now - startT);
+            }
+
+            // Playback suara (bisa menyusul jika loading)
             getBuffer(url).then(buf => {
                 if (!buf) return;
                 const src = audioCtx.createBufferSource();
@@ -841,15 +852,6 @@
                 if (el) {
                     el.classList.add('active');
                     setTimeout(() => el.classList.remove('active'), 70);
-                }
-
-                // Simpan ke rekaman jika sedang aktif
-                if (isRec && !fromLoop) {
-                    events.push({
-                        url: url,
-                        id: id,
-                        time: now - startT
-                    });
                 }
             });
         }
@@ -1025,14 +1027,13 @@
         }
 
         function toggleRecord() {
-            // Paksa resume saat mulai rekam
             if (audioCtx.state === 'suspended') audioCtx.resume();
 
             if (!isRec) {
                 // MULAI REKAM
                 isRec = true;
                 events = [];
-                startT = audioCtx.currentTime;
+                startT = Date.now(); // Gunakan Date.now
                 document.getElementById('btnRec').innerHTML = "⏹️ STOP REKAM";
                 document.getElementById('recInd').style.display = 'block';
                 showToast('Mulai merekam...');
@@ -1040,10 +1041,11 @@
             else {
                 // BERHENTI REKAM
                 isRec = false;
-                loopDur = audioCtx.currentTime - startT;
+                loopDur = Date.now() - startT;
 
-                // Jika durasi terlalu pendek atau tidak ada event, abaikan
-                if (events.length === 0 || loopDur < 0.1) {
+                console.log("Recording stopped. Duration:", loopDur, "Events:", events.length);
+
+                if (events.length === 0 || loopDur < 100) { // 100ms min
                     events = [];
                     document.getElementById('btnRec').innerHTML = "⏺ MULAI REKAM";
                     document.getElementById('recInd').style.display = 'none';
@@ -1057,9 +1059,8 @@
                 document.getElementById('btnPlay').style.display = 'block';
                 document.getElementById('btnDel').style.display = 'block';
 
-                // Putar otomatis setelah rekam
                 startLoop();
-                showToast('Rekaman disimpan & diputar!');
+                showToast(`Tersimpan: ${events.length} ketukan`);
             }
             toggleSidebar();
         }
@@ -1086,9 +1087,9 @@
             events.forEach(ev => {
                 setTimeout(() => {
                     if (isLoop) play(ev.url, ev.id, true);
-                }, ev.time * 1000);
+                }, ev.time); // ev.time sudah dalam ms jika pakai Date.now
             });
-            loopTo = setTimeout(playPattern, loopDur * 1000);
+            loopTo = setTimeout(playPattern, loopDur); // loopDur juga dalam ms
         }
 
         function deleteRec() {
