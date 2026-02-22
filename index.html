@@ -174,50 +174,27 @@
         }
 
         /* EXIT SYSTEM - Diperbarui */
-        #exitTrigger {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 80px;
-            height: 80px;
-            background: #dc2626;
-            clip-path: polygon(100% 0, 0 0, 100% 100%);
-            opacity: 0;
-            z-index: 5;
-            /* Di belakang pad jika pad memiliki z-index > 5 */
-            display: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        body.is-fullscreen #exitTrigger {
-            display: block;
-            opacity: 0.6;
-        }
-
-        #exitTrigger:hover {
+        #exitTrigger:active {
             opacity: 1;
-            transform: scale(1.1);
+            background: rgba(220, 38, 38, 0.4);
         }
 
+        /* Tombol Exit Fullscreen Utama */
         #realExitBtn {
             display: none;
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 2000;
-            background: linear-gradient(145deg, #ef4444, #dc2626);
+            top: 20px;
+            left: 20px;
+            z-index: 10000;
+            background: rgba(220, 38, 38, 0.8);
             color: white;
-            border: 4px solid white;
-            padding: 25px 60px;
-            border-radius: 20px;
-            font-weight: 800;
-            font-size: 20px;
-            box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
             cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            backdrop-filter: blur(5px);
         }
 
         #realExitBtn:hover {
@@ -882,8 +859,7 @@
         }
 
         function confirmExit() {
-            // Fungsi ini dipanggil dari onclick button
-            // Timer akan dihapus dan fullscreen ditutup
+            toggleFullScreen(false);
         }
 
         function toggleFullScreen(g) {
@@ -901,8 +877,13 @@
             trigger.style.display = 'none';
 
             if (g) {
-                document.documentElement.requestFullscreen().catch(e => { });
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+                else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
+
                 document.body.classList.add('is-fullscreen');
+                btn.style.display = 'block'; // Langsung munculkan tombol exit agar mudah
             }
             else {
                 if (document.fullscreenElement) document.exitFullscreen();
