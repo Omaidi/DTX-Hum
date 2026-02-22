@@ -1127,20 +1127,28 @@
             }
         });
 
-        // Panggil preload saat halaman dimuat
-        window.addEventListener('load', () => {
-            preloadAudio();
-
-            // Logika Splash Screen 1.5 detik agar lebih cepat
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
+        // Fungsi untuk menghilangkan Splash Screen secara paksa
+        function hideSplash() {
+            const splash = document.getElementById('splashScreen');
+            if (splash && !splash.classList.contains('fade-out')) {
                 splash.classList.add('fade-out');
-                // Beri sedikit waktu untuk animasi fade agar halus
                 setTimeout(() => {
                     splash.style.display = 'none';
                 }, 1000);
-            }, 1500);
-        });
+            }
+        }
+
+        // Jalankan preload
+        preloadAudio();
+
+        // Hilangkan splash screen setelah 1.5 detik (atau klik layar)
+        setTimeout(hideSplash, 1500);
+
+        // Backup: Klik di mana saja untuk menghilangkan splash jika macet
+        document.getElementById('splashScreen').addEventListener('click', hideSplash);
+
+        // Backup: Saat semua aset benar-benar siap
+        window.addEventListener('load', hideSplash);
     </script>
     <script>
         // Daftarkan Service Worker untuk fitur Offline (PWA)

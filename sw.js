@@ -1,5 +1,5 @@
 // sw.js - Service Worker untuk Akses Offline
-const CACHE_NAME = 'dtx-cache-v1';
+const CACHE_NAME = 'dtx-cache-v2';
 
 // File utama yang harus ada di awal
 const INITIAL_CACHING = [
@@ -15,6 +15,26 @@ self.addEventListener('install', (event) => {
             return cache.addAll(INITIAL_CACHING);
         })
     );
+    // Langsung aktifkan SW baru tanpa menunggu tutup browser
+    self.skipWaiting();
+});
+
+// Bersihkan cache lama saat SW baru diaktifkan
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+    // Ambil kendali klien segera
+    return self.clients.claim();
 });
 
 // Strategi: Ambil dari Cache dulu, kalau tidak ada baru ambil dari Network (lalu simpan ke cache)
