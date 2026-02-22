@@ -653,6 +653,8 @@
             onclick="toggleRecord()">⏺ MULAI REKAM</button>
         <button class="btn-sidebar" style="background: linear-gradient(145deg, #2563eb, #1d4ed8); display:none;"
             id="btnPlay" onclick="toggleLoop()">▶️ PUTAR LOOP</button>
+        <button class="btn-sidebar" style="background: linear-gradient(145deg, #25d366, #128c7e);"
+            onclick="shareToWhatsApp()">🟢 BAGIKAN KE WHATSAPP</button>
         <button class="btn-sidebar" style="background: linear-gradient(145deg, #475569, #334155); display:none;"
             id="btnDel" onclick="deleteRec()">🗑️ HAPUS REKAMAN</button>
         <button class="btn-sidebar" style="background: linear-gradient(145deg, #f59e0b, #d97706); color: black;"
@@ -1210,6 +1212,13 @@
 
         // Backup: Saat semua aset benar-benar siap
         window.addEventListener('load', hideSplash);
+
+        function shareToWhatsApp() {
+            const url = window.location.href;
+            const text = "Mainkan Drum Pad DTX-HUM Professional buatan Ibn Muhammad! Klik di sini: " + url;
+            const waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(text);
+            window.open(waUrl, '_blank');
+        }
     </script>
     <script>
         // Logika Instalasi PWA (Pengganti APK)
