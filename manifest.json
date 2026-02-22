@@ -2,7 +2,7 @@
   "name": "DTX Ibn Muhammad",
   "short_name": "DTX",
   "description": "Professional Hadroh and DTX Drum Pad",
-  "start_url": "./DTXTES.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#22c55e",

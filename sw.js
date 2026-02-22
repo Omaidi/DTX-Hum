@@ -4,7 +4,7 @@ const CACHE_NAME = 'dtx-cache-v1';
 // File utama yang harus ada di awal
 const INITIAL_CACHING = [
     './',
-    './DTXTES.html'
+    './index.html'
 ];
 
 // Saat Service Worker dipasang
