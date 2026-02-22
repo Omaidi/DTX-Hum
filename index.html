@@ -951,17 +951,17 @@
                 else if (doc.webkitRequestFullscreen) fsPromise = doc.webkitRequestFullscreen();
                 else if (doc.msRequestFullscreen) fsPromise = doc.msRequestFullscreen();
 
-                // Lock orientation to portrait when entering fullscreen
+                // Lock orientation to landscape when entering fullscreen
                 if (fsPromise && fsPromise.then) {
                     fsPromise.then(() => {
                         if (screen.orientation && screen.orientation.lock) {
-                            screen.orientation.lock('portrait').catch(err => console.log("Orientation lock failed:", err));
+                            screen.orientation.lock('landscape').catch(err => console.log("Orientation lock failed:", err));
                         }
                     }).catch(err => console.log("Fullscreen failed:", err));
                 } else {
                     // Fallback for browsers where requestFullscreen doesn't return a promise
                     if (screen.orientation && screen.orientation.lock) {
-                        screen.orientation.lock('portrait').catch(err => console.log("Orientation lock failed:", err));
+                        screen.orientation.lock('landscape').catch(err => console.log("Orientation lock failed:", err));
                     }
                 }
 
