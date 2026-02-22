@@ -596,6 +596,32 @@
                 opacity: 1;
             }
         }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #22c55e;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 10000;
+            border: 1px solid #22c55e;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            opacity: 0;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            bottom: 40px;
+            opacity: 1;
+        }
     </style>
 </head>
 
