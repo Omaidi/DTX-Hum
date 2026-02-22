@@ -185,13 +185,13 @@
             position: fixed;
             top: 10px;
             right: 10px;
-            z-index: 1;
-            /* Di belakang pad */
+            z-index: 100000;
+            /* Selalu di depan agar bisa diklik */
             width: 25px;
             height: 25px;
-            background: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.7);
             /* Merah transparan */
-            border: none;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
