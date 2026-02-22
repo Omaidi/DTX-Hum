@@ -204,11 +204,6 @@
             /* Muncul ke depan saat disentuh */
         }
 
-        #realExitBtn:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-            box-shadow: 0 0 70px rgba(0, 0, 0, 0.9), 0 15px 40px rgba(239, 68, 68, 0.6);
-        }
-
         /* Sidebar */
         .sidebar {
             position: fixed;
@@ -913,7 +908,7 @@
 
                 // Reset tampilan
                 btn.style.display = 'none';
-                btn.innerHTML = 'KELUAR FULLSCREEN'; // Reset teks ke default
+                btn.innerHTML = ''; // Pastikan tetap kosong agar jadi titik merah
             }
 
             if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
@@ -1171,7 +1166,7 @@
                 }
 
                 btn.style.display = 'none';
-                btn.innerHTML = 'KELUAR FULLSCREEN';
+                btn.innerHTML = '';
                 trigger.style.display = 'none';
                 document.body.classList.remove('is-fullscreen');
             }
